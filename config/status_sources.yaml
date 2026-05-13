@@ -4,18 +4,16 @@
 #   {base_url}/api/v2/status.json     — current overall status
 #   {base_url}/api/v2/incidents.json  — recent incidents
 #
-# Base URLs below were NOT verified live during scaffold (sandbox egress was
-# blocked). Verify on the first GitHub Actions dispatch — if either returns a
-# non-2xx, switch to the *.statuspage.io fallback subdomain.
+# Smartcar + Enode URLs verified live 2026-05-13 (both return 200).
 
 external_status_pages:
   - name: smartcar
     type: statuspage
-    base_url: https://status.smartcar.com   # TODO(verify): confirm /api/v2/status.json responds
+    base_url: https://status.smartcar.com
     components_we_care_about: ["API", "Webhooks"]
   - name: enode
     type: statuspage
-    base_url: https://status.enode.com      # TODO(verify): confirm /api/v2/status.json responds
+    base_url: https://status.enode.com
     components_we_care_about: ["API", "Webhooks"]
 
 instatus:
