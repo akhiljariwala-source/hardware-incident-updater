@@ -77,7 +77,7 @@ class InStatusSnapshot(BaseModel):
 
 def _load_instatus_config() -> dict:
     cfg_path = CONFIG_DIR / "status_sources.yaml"
-    cfg = yaml.safe_load(cfg_path.read_text()) or {}
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
     return cfg.get("instatus", {}) or {}
 
 
@@ -229,8 +229,8 @@ def _cli() -> int:
                 print(f"WARN: fixture capture failed: {exc}", file=sys.stderr)
                 return 1
 
-        (out_dir / "incidents_open.json").write_text(json.dumps(inc_raw, indent=2))
-        (out_dir / "components.json").write_text(json.dumps(comp_raw, indent=2))
+        (out_dir / "incidents_open.json").write_text(json.dumps(inc_raw, indent=2), encoding="utf-8")
+        (out_dir / "components.json").write_text(json.dumps(comp_raw, indent=2), encoding="utf-8")
         print(f"saved fixtures to {out_dir}", file=sys.stderr)
 
     return 0 if snapshot.error is None else 1

@@ -62,7 +62,7 @@ class StatusPageSnapshot(BaseModel):
 
 def _load_sources() -> list[dict[str, Any]]:
     cfg_path = CONFIG_DIR / "status_sources.yaml"
-    cfg = yaml.safe_load(cfg_path.read_text()) or {}
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
     return list(cfg.get("external_status_pages", []) or [])
 
 
@@ -188,8 +188,8 @@ def _cli() -> int:
                 except Exception as exc:  # noqa: BLE001
                     print(f"WARN: could not capture {name}: {exc}", file=sys.stderr)
                     continue
-                (out_dir / f"{name}_status.json").write_text(json.dumps(s, indent=2))
-                (out_dir / f"{name}_incidents.json").write_text(json.dumps(i, indent=2))
+                (out_dir / f"{name}_status.json").write_text(json.dumps(s, indent=2), encoding="utf-8")
+                (out_dir / f"{name}_incidents.json").write_text(json.dumps(i, indent=2), encoding="utf-8")
                 print(f"saved fixtures for {name}", file=sys.stderr)
 
     return 0 if all(s.error is None for s in snapshots.values()) else 1

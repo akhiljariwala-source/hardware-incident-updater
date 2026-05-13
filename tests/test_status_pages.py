@@ -22,7 +22,7 @@ FIXED_NOW = datetime(2026, 5, 13, 9, 0, tzinfo=UTC)
 
 
 def _load(name: str) -> dict:
-    return json.loads((FIXTURE_DIR / name).read_text())
+    return json.loads((FIXTURE_DIR / name).read_text(encoding="utf-8"))
 
 
 # ── _filter_recent ───────────────────────────────────────────────────────────

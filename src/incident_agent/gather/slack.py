@@ -105,7 +105,7 @@ class ChannelConfig:
 
 def _load_channel_configs() -> list[ChannelConfig]:
     cfg_path = CONFIG_DIR / "channels.yaml"
-    cfg = yaml.safe_load(cfg_path.read_text()) or {}
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
     raw = (cfg.get("slack", {}) or {}).get("channels", []) or []
     out: list[ChannelConfig] = []
     for entry in raw:
@@ -370,7 +370,9 @@ def _cli() -> int:
         out_dir: Path = REPO_ROOT / "tests" / "fixtures" / "slack"
         out_dir.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
-        (out_dir / f"snapshot_{stamp}.json").write_text(json.dumps(serialized, indent=2, default=str))
+        (out_dir / f"snapshot_{stamp}.json").write_text(
+            json.dumps(serialized, indent=2, default=str), encoding="utf-8"
+        )
         print(f"saved fixture to tests/fixtures/slack/snapshot_{stamp}.json", file=sys.stderr)
 
     return 0 if snapshot.error is None else 1
