@@ -1,0 +1,63 @@
+{
+  "page": {
+    "id": "example",
+    "name": "Example Provider",
+    "url": "https://status.example.com",
+    "updated_at": "2026-05-13T08:00:00Z"
+  },
+  "incidents": [
+    {
+      "id": "inc-recent-1",
+      "name": "Elevated webhook latency",
+      "status": "monitoring",
+      "impact": "minor",
+      "created_at": "2026-05-12T22:30:00Z",
+      "updated_at": "2026-05-12T23:15:00Z",
+      "resolved_at": null,
+      "shortlink": "https://stspg.io/abc1",
+      "incident_updates": [
+        {
+          "id": "u1",
+          "body": "We are monitoring webhook delivery latency.",
+          "status": "monitoring",
+          "created_at": "2026-05-12T23:15:00Z"
+        },
+        {
+          "id": "u2",
+          "body": "Investigating elevated p95 on webhook delivery.",
+          "status": "investigating",
+          "created_at": "2026-05-12T22:30:00Z"
+        }
+      ]
+    },
+    {
+      "id": "inc-recent-2",
+      "name": "Brief API degradation",
+      "status": "resolved",
+      "impact": "minor",
+      "created_at": "2026-05-10T14:00:00Z",
+      "updated_at": "2026-05-10T14:45:00Z",
+      "resolved_at": "2026-05-10T14:45:00Z",
+      "shortlink": "https://stspg.io/abc2",
+      "incident_updates": [
+        {
+          "id": "u3",
+          "body": "Resolved. Brief uptick in 5xx now back to baseline.",
+          "status": "resolved",
+          "created_at": "2026-05-10T14:45:00Z"
+        }
+      ]
+    },
+    {
+      "id": "inc-old-1",
+      "name": "Past incident (outside lookback window)",
+      "status": "resolved",
+      "impact": "major",
+      "created_at": "2026-04-01T10:00:00Z",
+      "updated_at": "2026-04-01T13:00:00Z",
+      "resolved_at": "2026-04-01T13:00:00Z",
+      "shortlink": "https://stspg.io/old1",
+      "incident_updates": []
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "page": {
+    "id": "example",
+    "name": "Example Provider",
+    "url": "https://status.example.com",
+    "updated_at": "2026-05-13T08:00:00Z"
+  },
+  "status": {
+    "indicator": "none",
+    "description": "All Systems Operational"
+  }
+}
