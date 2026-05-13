@@ -25,7 +25,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           NOTION_RUBRIC_PAGE_ID: ${{ secrets.NOTION_RUBRIC_PAGE_ID }}
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_USER_OAUTH_TOKEN }}
           INSTATUS_API_KEY: ${{ secrets.INSTATUS_API_KEY }}
           INSTATUS_PAGE_ID: ${{ secrets.INSTATUS_PAGE_ID }}
           POST_TO_CHANNEL_ID: ${{ secrets.POST_TO_CHANNEL_ID }}
