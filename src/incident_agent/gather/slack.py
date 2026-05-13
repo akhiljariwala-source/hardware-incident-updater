@@ -40,6 +40,17 @@ THREAD_REPLY_LIMIT = 10
 TRIAGE_REACTIONS = {"rotating_light", "warning", "fire", "siren"}
 USER_MENTION_RE = re.compile(r"<@([UW][A-Z0-9]+)(?:\|[^>]*)?>")
 
+# Slack message subtypes that are channel housekeeping, not signal.
+NOISE_SUBTYPES = {
+    "channel_join",
+    "channel_leave",
+    "channel_topic",
+    "channel_purpose",
+    "channel_name",
+    "channel_archive",
+    "channel_unarchive",
+}
+
 
 # ── Pydantic shapes ──────────────────────────────────────────────────────────
 
@@ -183,6 +194,70 @@ def _api_data(resp: Any) -> dict[str, Any]:
     return getattr(resp, "data", None) or {}
 
 
+def _extract_text(raw: dict[str, Any]) -> str:
+    """Pull the most informative text we can find from a Slack message.
+
+    Slack's `text` field is often empty for bot/integration posts (Zendesk,
+    PagerDuty, status-page apps); the real content lives in Block Kit blocks
+    or legacy attachments. We try in order:
+      1. The plain `text` field, if non-empty.
+      2. Block Kit blocks: section/header `text.text`, rich_text inline content.
+      3. Legacy attachments: title + pretext + text, or `fallback` as last resort.
+    """
+    main = (raw.get("text") or "").strip()
+    if main:
+        return main
+
+    parts: list[str] = []
+
+    for block in raw.get("blocks") or []:
+        btype = block.get("type")
+        if btype in {"section", "context"}:
+            text = (block.get("text") or {}).get("text", "")
+            if text:
+                parts.append(text)
+            for field in block.get("fields") or []:
+                ftxt = (field or {}).get("text", "")
+                if ftxt:
+                    parts.append(ftxt)
+            for el in block.get("elements") or []:
+                etxt = (el or {}).get("text", "")
+                if etxt:
+                    parts.append(etxt)
+        elif btype == "header":
+            text = (block.get("text") or {}).get("text", "")
+            if text:
+                parts.append(f"## {text}")
+        elif btype == "rich_text":
+            for el in block.get("elements") or []:
+                for sub in el.get("elements") or []:
+                    if sub.get("type") in {"text", "link", "user", "channel"}:
+                        parts.append(
+                            sub.get("text")
+                            or sub.get("url")
+                            or sub.get("user_id")
+                            or sub.get("channel_id")
+                            or ""
+                        )
+
+    for att in raw.get("attachments") or []:
+        title = att.get("title", "")
+        pretext = att.get("pretext", "")
+        text = att.get("text", "")
+        if title:
+            parts.append(f"**{title}**")
+        if pretext:
+            parts.append(pretext)
+        if text:
+            parts.append(text)
+        elif not title and not pretext:
+            fallback = att.get("fallback", "")
+            if fallback:
+                parts.append(fallback)
+
+    return "\n".join(p for p in parts if p).strip()
+
+
 def _build_message(
     raw: dict[str, Any],
     resolver: UserResolver,
@@ -193,7 +268,7 @@ def _build_message(
         # Bot messages: prefer the bot username embedded in the payload.
         author = raw.get("username") or raw.get("bot_profile", {}).get("name") or f"(bot:{author_id})"
 
-    text = resolver.resolve_mentions(raw.get("text") or "")
+    text = resolver.resolve_mentions(_extract_text(raw))
     reactions_raw = raw.get("reactions", []) or []
     reactions = [
         SlackReaction(name=r.get("name", ""), count=int(r.get("count", 0)))
@@ -284,6 +359,9 @@ def fetch_channel_messages(
 
     data = _api_data(resp)
     raws: list[dict[str, Any]] = data.get("messages") or []
+
+    # Drop channel housekeeping messages before they count toward max_messages.
+    raws = [r for r in raws if r.get("subtype") not in NOISE_SUBTYPES]
 
     # Slack returns newest first; reverse for chronological reading order.
     raws = list(reversed(raws[: channel.max_messages]))

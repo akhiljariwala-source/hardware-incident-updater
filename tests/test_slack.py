@@ -241,6 +241,85 @@ def test_message_resolves_author_and_mentions():
     assert "@Sam" in m.text
 
 
+def test_channel_join_messages_are_dropped():
+    join = {
+        "ts": "1.0",
+        "user": "U01AKHIL01",
+        "text": "@Akhil has joined the channel",
+        "type": "message",
+        "subtype": "channel_join",
+    }
+    keep = _msg("2.0", text="real content")
+    client = _FakeSlackClient(
+        users=_users(),
+        history_by_channel={"C_X": [keep, join]},
+    )
+    cfg = _channel("x", id="C_X", pre_filter=False)
+    snap = fetch_channel_messages(client, cfg, now=FIXED_NOW)
+    assert [m.ts for m in snap.messages] == ["2.0"]
+
+
+def test_extract_text_pulls_from_blocks_when_text_empty():
+    raw = {
+        "ts": "1.0",
+        "bot_id": "B_ZENDESK",
+        "username": "Zendesk",
+        "text": "",
+        "type": "message",
+        "blocks": [
+            {"type": "header", "text": {"text": "Ticket #1234"}},
+            {"type": "section", "text": {"text": "Smart charging not working"}},
+            {"type": "section", "fields": [
+                {"text": "*Requester:* Driver"},
+                {"text": "*Priority:* High"},
+            ]},
+        ],
+    }
+    client = _FakeSlackClient(history_by_channel={"C_X": [raw]})
+    cfg = _channel("x", id="C_X", pre_filter=False)
+    snap = fetch_channel_messages(client, cfg, now=FIXED_NOW)
+    text = snap.messages[0].text
+    assert "Ticket #1234" in text
+    assert "Smart charging not working" in text
+    assert "Priority:" in text
+
+
+def test_extract_text_pulls_from_legacy_attachments():
+    raw = {
+        "ts": "1.0",
+        "bot_id": "B_ENODE",
+        "username": "Enode status",
+        "text": "",
+        "type": "message",
+        "attachments": [{
+            "title": "Mercedes: Elevated error rate",
+            "text": "Status: Resolved\nThis issue is now resolved.",
+            "fallback": "fallback won't be used because title+text present",
+        }],
+    }
+    client = _FakeSlackClient(history_by_channel={"C_X": [raw]})
+    cfg = _channel("x", id="C_X", pre_filter=False)
+    snap = fetch_channel_messages(client, cfg, now=FIXED_NOW)
+    text = snap.messages[0].text
+    assert "**Mercedes: Elevated error rate**" in text
+    assert "Status: Resolved" in text
+    assert "fallback" not in text
+
+
+def test_extract_text_falls_back_to_attachment_fallback():
+    raw = {
+        "ts": "1.0",
+        "bot_id": "B_X",
+        "text": "",
+        "type": "message",
+        "attachments": [{"fallback": "Critical alert: thing broke"}],
+    }
+    client = _FakeSlackClient(history_by_channel={"C_X": [raw]})
+    cfg = _channel("x", id="C_X", pre_filter=False)
+    snap = fetch_channel_messages(client, cfg, now=FIXED_NOW)
+    assert "Critical alert: thing broke" in snap.messages[0].text
+
+
 def test_bot_message_uses_bot_profile_name():
     raw = {
         "ts": "1.0",
