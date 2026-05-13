@@ -1,0 +1,25 @@
+# External provider status pages + ev.energy's own InStatus page.
+#
+# Statuspage JSON endpoints are public and unauthenticated:
+#   {base_url}/api/v2/status.json     — current overall status
+#   {base_url}/api/v2/incidents.json  — recent incidents
+#
+# Base URLs below were NOT verified live during scaffold (sandbox egress was
+# blocked). Verify on the first GitHub Actions dispatch — if either returns a
+# non-2xx, switch to the *.statuspage.io fallback subdomain.
+
+external_status_pages:
+  - name: smartcar
+    type: statuspage
+    base_url: https://status.smartcar.com   # TODO(verify): confirm /api/v2/status.json responds
+    components_we_care_about: ["API", "Webhooks"]
+  - name: enode
+    type: statuspage
+    base_url: https://status.enode.com      # TODO(verify): confirm /api/v2/status.json responds
+    components_we_care_about: ["API", "Webhooks"]
+
+instatus:
+  # InStatus REST API base. Bearer-token auth in Authorization header.
+  base_url: https://api.instatus.com
+  # Page ID (cuid) — set via INSTATUS_PAGE_ID env var at runtime.
+  page_id_env: INSTATUS_PAGE_ID

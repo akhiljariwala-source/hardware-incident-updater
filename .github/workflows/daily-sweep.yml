@@ -1,0 +1,41 @@
+name: Daily Integration Sweep
+
+on:
+  schedule:
+    - cron: '0 9 * * *'   # 09:00 UTC daily
+  workflow_dispatch:
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - run: pip install -e .
+
+      - name: Run sweep
+        run: python -m incident_agent.main
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_RUBRIC_PAGE_ID: ${{ secrets.NOTION_RUBRIC_PAGE_ID }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          INSTATUS_API_KEY: ${{ secrets.INSTATUS_API_KEY }}
+          INSTATUS_PAGE_ID: ${{ secrets.INSTATUS_PAGE_ID }}
+          POST_TO_CHANNEL_ID: ${{ secrets.POST_TO_CHANNEL_ID }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Upload run fixtures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fixture-${{ github.run_id }}
+          path: fixtures/
+          retention-days: 30

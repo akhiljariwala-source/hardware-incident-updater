@@ -1,0 +1,26 @@
+# Slack channels the agent sweeps each run.
+# Akhil fills this in once the bot is provisioned and the IDs are resolved.
+#
+# Per-channel options:
+#   name             — human label (used in fixtures/prompts)
+#   id               — Slack channel ID (Cxxxxxxxxx)
+#   pre_filter       — if true, only forward messages matching filter_keywords
+#                      or carrying triage reactions (🚨 / ⚠️)
+#   filter_keywords  — list of substrings (only used when pre_filter: true)
+#   max_messages     — hard cap to keep token budget bounded
+#   notes            — free-form, for humans
+
+slack:
+  channels:
+    # TODO(akhil): replace with real channels + IDs before first run.
+    # - name: provider-enode
+    #   id: C01234ABCDE
+    #   pre_filter: false
+    #   max_messages: 50
+    #   notes: "Enode provider status updates, low signal-to-noise"
+    # - name: hardware-connectivity-alerts
+    #   id: C05678FGHIJ
+    #   pre_filter: true
+    #   filter_keywords: ["outage", "down", "failing", "error rate", "🚨"]
+    #   max_messages: 100
+    []
