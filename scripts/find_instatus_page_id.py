@@ -5,20 +5,26 @@ The InStatus dashboard doesn't surface the canonical page ID (a cuid like
 grab the cuid for `ev.energy Integration Status`, and stash it as the
 `INSTATUS_PAGE_ID` repo secret.
 
-Usage:
-    export INSTATUS_API_KEY=...   # from instatus.com → API keys
+Usage (PowerShell):
+    $env:INSTATUS_API_KEY = "<paste-key>"
+    python scripts/find_instatus_page_id.py
+
+Usage (bash/zsh):
+    export INSTATUS_API_KEY=<paste-key>
     python scripts/find_instatus_page_id.py
 """
 
 from __future__ import annotations
 
-import json
 import os
 import sys
-import urllib.error
-import urllib.request
+
+import httpx
 
 API_BASE = "https://api.instatus.com"
+# Use a real User-Agent — Cloudflare in front of InStatus rejects the default
+# Python-urllib UA (returns 403 with cf error 1010).
+USER_AGENT = "ev-energy-incident-agent/0.1 (+find_instatus_page_id)"
 
 
 def main() -> int:
@@ -27,17 +33,26 @@ def main() -> int:
         print("error: set INSTATUS_API_KEY in your env first", file=sys.stderr)
         return 1
 
-    req = urllib.request.Request(
-        f"{API_BASE}/v1/pages",
-        headers={"Authorization": f"Bearer {api_key}"},
-    )
     try:
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            pages = json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        print(f"error: {e.code} {e.reason}\n{e.read().decode(errors='replace')}", file=sys.stderr)
+        resp = httpx.get(
+            f"{API_BASE}/v1/pages",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "User-Agent": USER_AGENT,
+                "Accept": "application/json",
+            },
+            timeout=20.0,
+        )
+    except httpx.HTTPError as exc:
+        print(f"error: network failure: {exc}", file=sys.stderr)
         return 1
 
+    if resp.status_code != 200:
+        print(f"error: HTTP {resp.status_code}", file=sys.stderr)
+        print(resp.text[:500], file=sys.stderr)
+        return 1
+
+    pages = resp.json()
     if not pages:
         print("(no pages returned — does this API key have any page access?)")
         return 1
