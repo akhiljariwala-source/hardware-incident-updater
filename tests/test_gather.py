@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from incident_agent.gather import instatus, rubric, slack
+from incident_agent.gather import rubric, slack
 
 
 @pytest.mark.parametrize(
     "fn",
     [
         slack.gather_slack_messages,
-        instatus.gather_instatus_state,
         rubric.gather_rubric,
     ],
 )

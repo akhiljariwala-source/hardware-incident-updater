@@ -1,0 +1,32 @@
+[
+  {
+    "id": "comp_smartcar_api",
+    "name": "Smartcar — API",
+    "status": "OPERATIONAL",
+    "description": "Smartcar vehicle data API"
+  },
+  {
+    "id": "comp_smartcar_webhooks",
+    "name": "Smartcar — Webhooks",
+    "status": "OPERATIONAL",
+    "description": null
+  },
+  {
+    "id": "comp_enode_api",
+    "name": "Enode — API",
+    "status": "OPERATIONAL",
+    "description": "Enode vehicle/charger control API"
+  },
+  {
+    "id": "comp_enode_webhooks",
+    "name": "Enode — Webhooks",
+    "status": "OPERATIONAL",
+    "description": null
+  },
+  {
+    "id": "comp_smart_charging",
+    "name": "Smart charging dispatch",
+    "status": "OPERATIONAL",
+    "description": "Charging session orchestration"
+  }
+]
