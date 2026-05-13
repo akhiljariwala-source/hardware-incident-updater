@@ -1,26 +1,86 @@
 # Slack channels the agent sweeps each run.
-# Akhil fills this in once the bot is provisioned and the IDs are resolved.
 #
 # Per-channel options:
-#   name             — human label (used in fixtures/prompts)
+#   name             — channel handle (without the #)
 #   id               — Slack channel ID (Cxxxxxxxxx)
+#   private          — true if it's a private channel; bot needs groups:history
+#                      scope AND must be invited via /invite @<bot>
 #   pre_filter       — if true, only forward messages matching filter_keywords
-#                      or carrying triage reactions (🚨 / ⚠️)
-#   filter_keywords  — list of substrings (only used when pre_filter: true)
-#   max_messages     — hard cap to keep token budget bounded
+#                      or carrying triage reactions
+#   filter_keywords  — substrings (only used when pre_filter: true)
+#   max_messages     — hard cap to keep the token budget bounded
 #   notes            — free-form, for humans
 
 slack:
   channels:
-    # TODO(akhil): replace with real channels + IDs before first run.
-    # - name: provider-enode
-    #   id: C01234ABCDE
-    #   pre_filter: false
-    #   max_messages: 50
-    #   notes: "Enode provider status updates, low signal-to-noise"
-    # - name: hardware-connectivity-alerts
-    #   id: C05678FGHIJ
-    #   pre_filter: true
-    #   filter_keywords: ["outage", "down", "failing", "error rate", "🚨"]
-    #   max_messages: 100
-    []
+    # ── Alerts / automation ────────────────────────────────────────────
+    # Primary signal source: automated alerts + human triage reactions.
+    - name: hardware-connectivity-alerts
+      id: C08GBFWHF6X
+      private: false
+      pre_filter: true
+      filter_keywords: ["outage", "down", "failing", "elevated", "error rate",
+                        "degraded", "🚨", "⚠️"]
+      max_messages: 150
+      notes: "Automated alerts + human triage reactions. Primary signal."
+
+    # Status broadcasting channel (created Jun 2025 by Dom Wong).
+    - name: hardware-connectivity-status
+      id: C093HAMFH9N
+      private: false
+      pre_filter: false
+      max_messages: 75
+      notes: "Status broadcasts from the connectivity team. Low-volume, high-signal."
+
+    # ── Internal triage ────────────────────────────────────────────────
+    - name: hardware-connectivity-support
+      id: C04SNLZ6F1P
+      private: false
+      pre_filter: true
+      filter_keywords: ["outage", "down", "broken", "not working", "can't",
+                        "failing", "stuck", "smartcar", "enode", "🚨", "⚠️"]
+      max_messages: 100
+      notes: "Engineering + support triage. Noisy; pre-filter for incident signals."
+
+    # ── Customer-side reports ──────────────────────────────────────────
+    # Broadest channel. Filter aggressively or it'll dominate the token budget.
+    # Tune `filter_keywords` after a week of runs based on false-positives we see.
+    - name: customer-success
+      id: CLR5E6W2V
+      private: false
+      pre_filter: true
+      filter_keywords: ["outage", "widespread", "many users", "multiple",
+                        "can't charge", "not charging", "smart charging broken",
+                        "smartcar", "enode", "🚨"]
+      max_messages: 100
+      notes: "High volume. Filter aggressively; tune after calibration."
+
+    # ── Provider-facing channels (private — bot must be invited) ──────
+    # Lower volume, higher signal-per-message. Include everything.
+    - name: smartcar-evenergy-support
+      id: C03JVSJRF47
+      private: true
+      pre_filter: false
+      max_messages: 50
+      notes: "Direct Smartcar support exchanges; private; bot must be invited."
+
+    - name: smartcar-evenergy-partnership
+      id: C0ABDG4N6KB
+      private: true
+      pre_filter: false
+      max_messages: 50
+      notes: "Strategic Smartcar channel; private; bot must be invited."
+
+    - name: enode-evenergy
+      id: C01PTC2J5V5
+      private: false
+      pre_filter: false
+      max_messages: 50
+      notes: "Long-standing shared Enode support channel."
+
+    - name: enode-evenergy-partnership
+      id: C0AAU5UCK19
+      private: true
+      pre_filter: false
+      max_messages: 50
+      notes: "Strategic Enode channel; private; bot must be invited."
