@@ -1,18 +1,11 @@
-"""Gather-phase tests. Real coverage lands in Step 5 (Slack)."""
+"""Cross-gatherer smoke tests.
+
+All four gatherers (status_pages, instatus, rubric, slack) are now
+implemented; their detailed coverage lives in dedicated test_*.py files.
+"""
 
 from __future__ import annotations
 
-import pytest
 
-from incident_agent.gather import slack
-
-
-@pytest.mark.parametrize(
-    "fn",
-    [
-        slack.gather_slack_messages,
-    ],
-)
-def test_gatherers_are_stubbed(fn):
-    with pytest.raises(NotImplementedError):
-        fn()
+def test_gatherer_modules_importable():
+    from incident_agent.gather import instatus, rubric, slack, status_pages  # noqa: F401
